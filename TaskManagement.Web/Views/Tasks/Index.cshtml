@@ -1,0 +1,40 @@
+@model List<TaskItem>
+@{
+    ViewData["Title"] = "My Tasks";
+}
+<div class="heading-row tasks-heading">
+    <h1>My Tasks</h1>
+    <a class="button" asp-action="Create">+ New task</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="empty">No tasks yet. Click <strong>+ New task</strong> to add one.</div>
+}
+else
+{
+    <div class="task-list">
+        @foreach (var task in Model)
+        {
+            <article class="task-card @(task.IsDone ? "task-done" : "")">
+                <form asp-action="SetDone" method="post" class="check-form">
+                    <input type="hidden" name="id" value="@task.Id" />
+                    <input type="hidden" name="isDone" value="@(!task.IsDone ? "true" : "false")" />
+                    <button type="submit" class="task-check @(task.IsDone ? "checked" : "")"
+                            aria-label="@(task.IsDone ? "Mark as to do" : "Mark as done")"
+                            title="@(task.IsDone ? "Mark as to do" : "Mark as done")">
+                        @if (task.IsDone) { <span aria-hidden="true">✓</span> }
+                    </button>
+                </form>
+                <div class="task-details">
+                    <h2>@task.Title</h2>
+                    @if (!string.IsNullOrWhiteSpace(task.Description))
+                    {
+                        <p>@task.Description</p>
+                    }
+                </div>
+                <span class="status @(task.IsDone ? "status-done" : "status-todo")">@(task.IsDone ? "DONE" : "TO DO")</span>
+            </article>
+        }
+    </div>
+}

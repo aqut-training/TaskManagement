@@ -1,0 +1,25 @@
+@model CreateTaskViewModel
+@{
+    ViewData["Title"] = "Add Task";
+}
+<div class="panel form-panel">
+    <h1>Add Task</h1>
+    <p class="muted">Enter the details of your new task.</p>
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="validation"></div>
+        <div class="field">
+            <label asp-for="Title"></label>
+            <input asp-for="Title" maxlength="100" placeholder="e.g. Prepare the training" />
+            <span asp-validation-for="Title" class="validation"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Description"></label>
+            <textarea asp-for="Description" rows="4" maxlength="500" placeholder="Optional details"></textarea>
+            <span asp-validation-for="Description" class="validation"></span>
+        </div>
+        <div class="actions">
+            <button class="button" type="submit">Save Task</button>
+            <a class="button secondary" asp-action="Index">Cancel</a>
+        </div>
+    </form>
+</div>

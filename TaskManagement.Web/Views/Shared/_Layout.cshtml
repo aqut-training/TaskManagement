@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Task Management</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="topbar">
+        <nav class="container nav">
+            <a class="brand" asp-controller="Home" asp-action="Index">Task Management</a>
+            <div>
+                <a asp-controller="Home" asp-action="Index">Home</a>
+                <a asp-controller="Tasks" asp-action="Index">Tasks</a>
+                <a asp-controller="Tasks" asp-action="Create">Add Task</a>
+            </div>
+        </nav>
+    </header>
+    <main class="container page">
+        @RenderBody()
+    </main>
+    <footer class="footer container">ASP.NET Core MVC Training Project</footer>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+
