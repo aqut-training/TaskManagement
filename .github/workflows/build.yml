@@ -1,0 +1,39 @@
+name: Build TaskManagement
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Get source code
+      - name: Checkout source code
+        uses: actions/checkout@v7
+
+      # 2. Install .NET 8 SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+
+      # 3. Restore NuGet packages
+      - name: Restore
+        run: dotnet restore TaskManagement.Web/TaskManagement.Web.csproj
+
+      # 4. Build application
+      - name: Build
+        run: dotnet build TaskManagement.Web/TaskManagement.Web.csproj --configuration Release --no-restore
+
+      # 5. Publish application
+      - name: Publish
+        run: dotnet publish TaskManagement.Web/TaskManagement.Web.csproj --configuration Release --no-build --output ./publish
+
+      # 6. Save published files as GitHub Artifact
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: TaskManagement
+          path: ./publish
