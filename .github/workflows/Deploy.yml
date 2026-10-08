@@ -1,0 +1,78 @@
+name: Deploy TaskManagement
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore TaskManagement.Web/TaskManagement.Web.csproj
+
+      - name: Build
+        run: dotnet build TaskManagement.Web/TaskManagement.Web.csproj --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish TaskManagement.Web/TaskManagement.Web.csproj --configuration Release --no-build --output ./publish
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TaskManagement
+          path: ./publish
+
+
+  deploy:
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    environment: Production
+
+    steps:
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: TaskManagement
+          path: ./publish
+
+      - name: Create deployment package
+        run: |
+          cd publish
+          zip -r ../TaskManagement.zip .
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy package to server
+        run: |
+          scp TaskManagement.zip \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:TaskManagement.zip
+
+      - name: Deploy to IIS
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          'powershell -NoProfile -Command "
+            Import-Module WebAdministration;
+            Stop-WebAppPool -Name \"TaskManagement\";
+            Remove-Item \"C:\Sites\TaskManagement\*\" -Recurse -Force;
+            Expand-Archive \"$env:USERPROFILE\TaskManagement.zip\" \"C:\Sites\TaskManagement\" -Force;
+            Start-WebAppPool -Name \"TaskManagement\";
+          "'
